@@ -1,12 +1,12 @@
 package com.platform;
 
 import java.io.FileOutputStream;
-import java.util.Random;
+import java.security.SecureRandom;
 
 public class RandomBitGeneratorJava {
 
     public static void main(String[] args) throws Exception {
-        int totalBits = 100000000;
+        int totalBits = 300000000;
         int totalBytes = (totalBits + 7) / 8;
 
         String filePath = "./secureRandomBits.bin";
@@ -15,7 +15,7 @@ public class RandomBitGeneratorJava {
             System.out.println("Generated secure seed: " + bytesToHex(seed));
             HmacDrbgJava rng = new HmacDrbgJava(seed);
             int bytesWritten = 0;
-            int chunkSize = 1024 * 1024;
+            int chunkSize = 1024 * 1024; // 1MB chunk size
             while (bytesWritten < totalBytes) {
                 int bytesToWrite = Math.min(chunkSize, totalBytes - bytesWritten);
                 byte[] randomData = rng.generateRandomBytes(bytesToWrite);
@@ -27,10 +27,11 @@ public class RandomBitGeneratorJava {
     }
 
     private static byte[] generateSecureSeed() {
-        byte[] secureRandom = new byte[64];
-        new Random().nextBytes(secureRandom);
-        byte[] timeEntropy = String.valueOf(System.currentTimeMillis()).getBytes();
-        return concatArrays(secureRandom, timeEntropy);
+        SecureRandom secureRandom = new SecureRandom();
+        byte[] secureSeed = new byte[64];
+        secureRandom.nextBytes(secureSeed);
+        byte[] timeEntropy = Long.valueOf(System.nanoTime()).toString().getBytes();
+        return concatArrays(secureSeed, timeEntropy);
     }
 
     private static String bytesToHex(byte[] bytes) {
